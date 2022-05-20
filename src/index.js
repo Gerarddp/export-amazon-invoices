@@ -38,9 +38,7 @@ const failedExports = [];
       '--disable-web-security', // disable CORS to allow PDF download
     ],
   });
-  console.log('hey')
   const page = await browser.newPage();
-  console.log('hey again')
 
   // enable download of PDF files, see https://github.com/GoogleChrome/puppeteer/issues/610#issuecomment-340160025
   // make function writeABString available on the window object

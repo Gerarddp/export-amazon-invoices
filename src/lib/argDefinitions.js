@@ -44,6 +44,15 @@ const argDefinitions = [
     type: Boolean,
     typeLabel: '[italic]{boolean}',
   },
+  {
+    name: 'groupKey',
+    alias: 'g',
+    multiple: false,
+    defaultValue: false,
+    description: 'Group key needed for business accounts',
+    type: String,
+    typeLabel: '[italic]{string}',
+  }
 ];
 
 export default argDefinitions;
