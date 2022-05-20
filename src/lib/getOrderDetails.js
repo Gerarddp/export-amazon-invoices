@@ -18,7 +18,7 @@ const getOrderDetails = async (page, order) => {
     // article,
     date,
     id,
-    total: total.replace(/EUR\s([0-9,.]+)/g, '$1 €'),
+    total: total.replace(/EUR\s([0-9,.]+)/g, '$1'),
     url,
   };
 };
