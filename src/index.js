@@ -64,6 +64,7 @@ const failedExports = [];
   await page.goto(listOrders(), {waitUntil: 'load'});
 
   await logInIfRequired(page, args);
+  const groupKey = args.groupKey
 
   for (let ii = 0; ii < args.year.length; ii++) {
     const year = args.year[ii];
@@ -73,7 +74,7 @@ const failedExports = [];
     const outputFolder = `./output/${year}`;
     fs.mkdirs(outputFolder);
 
-    await page.goto(listOrders(year, args.groupKey, 0), {waitUntil: 'load'});
+    await page.goto(listOrders(year, groupKey, 0), {waitUntil: 'load'});
 
     const numberOfOrders = Math.min(
       args.limit,
@@ -87,7 +88,7 @@ const failedExports = [];
     };
 
     for (let i = 1, l = numberOfOrders; i <= l; i++) {
-      await loadNextPageIfRequired(page, i, numberOfOrders, year);
+      await loadNextPageIfRequired(page, i, numberOfOrders, year, groupKey);
 
       const orderNumber = getOrderNumber(i.toString(), year, numberOfOrders);
       logDetail(`Trying to export invoice(s) for order ${orderNumber}`);
@@ -99,7 +100,7 @@ const failedExports = [];
 
       // the popover ids start at 3 and Amazon increments them in the order the elements are clicked,
       // so the first opened popover has #a-popover-3, the next #a-popover-4, #a-popover-5 etc.
-      const popoverContent = `#a-popover-content-${orderIndex + 1} ${selectors.list.popoverLinks}`;
+      const popoverContent = `#a-popover-content-${orderIndex} ${selectors.list.popoverLinks}`;
 
       context.orderNumber = orderNumber;
 
@@ -113,7 +114,9 @@ const failedExports = [];
 
         const popoverTrigger = await page.$(`${order} ${s.popoverTrigger}`);
         await popoverTrigger.click();
+        console.log('continue1', popoverContent)
         await page.waitFor(popoverContent); // the popover content can take up to 1-3 seconds to load
+        console.log('continue')
 
         await page.evaluate(
           async (sel, context) => {
