@@ -87,6 +87,7 @@ const failedExports = [];
       outputFolder,
     };
 
+      let overIndex = 0;
     for (let i = 1, l = numberOfOrders; i <= l; i++) {
       await loadNextPageIfRequired(page, i, numberOfOrders, year, groupKey);
 
@@ -97,10 +98,15 @@ const failedExports = [];
       // so a selector using nth-child within the ordersContainer has to start at 2,
       // meaning we have to increase all orderIndex values by 1
       const orderIndex = i % resultsPerPage === 0 ? resultsPerPage + 1 : i % resultsPerPage + 1;
+      
 
       // the popover ids start at 3 and Amazon increments them in the order the elements are clicked,
       // so the first opened popover has #a-popover-3, the next #a-popover-4, #a-popover-5 etc.
-      const popoverContent = `#a-popover-content-${orderIndex} ${selectors.list.popoverLinks}`;
+      const popoverContent = `#a-popover-content-${orderIndex - overIndex} ${selectors.list.popoverLinks}`;
+
+      if(i % resultsPerPage === 0) {
+        overIndex = 0;
+      }
 
       context.orderNumber = orderNumber;
 
@@ -172,6 +178,9 @@ const failedExports = [];
           context
         );
       } catch (e) {
+        if(i % resultsPerPage !== 0) {
+                ++overIndex;
+        }
         const resultsPage = Math.ceil(i / resultsPerPage);
         logError(`Failed to process order ${orderNumber}, orderIndex ${orderIndex}, page ${resultsPage}`);
         logError(e);
