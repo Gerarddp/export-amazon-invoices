@@ -38,7 +38,9 @@ const failedExports = [];
       '--disable-web-security', // disable CORS to allow PDF download
     ],
   });
+  console.log('hey')
   const page = await browser.newPage();
+  console.log('hey again')
 
   // enable download of PDF files, see https://github.com/GoogleChrome/puppeteer/issues/610#issuecomment-340160025
   // make function writeABString available on the window object
@@ -73,7 +75,7 @@ const failedExports = [];
     const outputFolder = `./output/${year}`;
     fs.mkdirs(outputFolder);
 
-    await page.goto(listOrders(year, 0), {waitUntil: 'load'});
+    await page.goto(listOrders(year, args.groupKey, 0), {waitUntil: 'load'});
 
     const numberOfOrders = Math.min(
       args.limit,

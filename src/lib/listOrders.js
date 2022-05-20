@@ -1,4 +1,4 @@
-const listOrders = (year, offset = 0) => {
+const listOrders = (year, groupKey, offset = 0) => {
   const baseUrl = 'https://www.amazon.de/gp/your-account/order-history';
 
   const options = [];
@@ -8,6 +8,11 @@ const listOrders = (year, offset = 0) => {
   if (offset) {
     options.push(`startIndex=${offset}`);
   }
+
+  if(groupKey) {
+    options.push(`selectedB2BGroupKey=${groupKey}`)
+  }
+
   const queryString = options.join('&');
 
   const url = [baseUrl, queryString].filter(Boolean).join('?');
