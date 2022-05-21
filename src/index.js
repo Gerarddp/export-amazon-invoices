@@ -26,6 +26,11 @@ if (credentialsAreMissing(args)) {
 
 const orderData = [];
 const failedExports = [];
+let inventory = {};
+
+try {
+  inventory = JSON.parse(fs.readFileSync('./output/inventory.json', 'utf8'))
+} catch(err) {}
 
 (async () => {
   rimrafOutputFolders(args);
@@ -116,6 +121,8 @@ const failedExports = [];
 
         // get metadata of order
         context.orderDetails = await getOrderDetails(page, order);
+        if(inventory[context.orderDetails.id]) break;
+
         orderData.push(context.orderDetails);
 
         const popoverTrigger = await page.$(`${order} ${s.popoverTrigger}`);
@@ -203,5 +210,11 @@ const failedExports = [];
 
   const orderDataFile = './output/order_data.csv';
   fs.writeFile(orderDataFile, orderDataToCSV(orderData));
+  fs.writeFile('./output/inventory.json', JSON.stringify({...inventory, ...orderData.reduce((o,x) => {
+    if(!o[x.id]) o[x.id] = [x]
+    else o[x.id].push(x)
+
+    return o
+  }, {})}), 'utf8')
   logResults(failedExports, args, orderDataFile);
 })();
