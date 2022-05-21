@@ -11,12 +11,12 @@ import orderDataToCSV from './lib/orderDataToCSV';
 import puppeteer from 'puppeteer';
 import rimrafOutputFolders from './lib/rimrafOutputFolders';
 import showUsageHints from './lib/showUsageHints';
-import {ab2str, str2ab} from './lib/convertBetweenStringAndArrayBuffer.js';
-import {log, logDetail, logError, logStatus} from './lib/log';
+import { ab2str, str2ab } from './lib/convertBetweenStringAndArrayBuffer.js';
+import { log, logDetail, logError, logStatus } from './lib/log';
 
 import argDefinitions from './lib/argDefinitions';
 import selectors from './lib/selectors';
-import {resultsPerPage} from './lib/constants';
+import { resultsPerPage } from './lib/constants';
 
 const args = commandLineArgs(argDefinitions);
 
@@ -29,8 +29,8 @@ const failedExports = [];
 let inventory = {};
 
 try {
-  inventory = JSON.parse(fs.readFileSync('./output/inventory.json', 'utf8'))
-} catch(err) {}
+  inventory = JSON.parse(fs.readFileSync('./output/inventory.json', 'utf8'));
+} catch (err) {}
 
 (async () => {
   rimrafOutputFolders(args);
@@ -40,8 +40,8 @@ try {
     devtools: false, // have DevTools open for debugging (sets 'headless' option to false, when true)
     headless: false, // FIXME: puppeteer should really run in headless mode, but when it's doing, it can't even log in
     args: [
-      '--disable-web-security', // disable CORS to allow PDF download
-    ],
+      '--disable-web-security' // disable CORS to allow PDF download
+    ]
   });
   const page = await browser.newPage();
 
@@ -63,13 +63,13 @@ try {
 
   await page.setViewport({
     width: 1440,
-    height: 900,
+    height: 900
   });
 
-  await page.goto(listOrders(), {waitUntil: 'load'});
+  await page.goto(listOrders(), { waitUntil: 'load' });
 
   await logInIfRequired(page, args);
-  const groupKey = args.groupKey
+  const groupKey = args.groupKey;
 
   for (let ii = 0; ii < args.year.length; ii++) {
     const year = args.year[ii];
@@ -79,7 +79,7 @@ try {
     const outputFolder = `./output/${year}`;
     fs.mkdirs(outputFolder);
 
-    await page.goto(listOrders(year, groupKey, 0), {waitUntil: 'load'});
+    await page.goto(listOrders(year, groupKey, 0), { waitUntil: 'load' });
 
     const numberOfOrders = Math.min(
       args.limit,
@@ -89,10 +89,10 @@ try {
 
     // define variables that should be available in page.evaluate
     const context = {
-      outputFolder,
+      outputFolder
     };
 
-      let overIndex = 0;
+    let overIndex = 0;
     for (let i = 1, l = numberOfOrders; i <= l; i++) {
       await loadNextPageIfRequired(page, i, numberOfOrders, year, groupKey);
 
@@ -102,14 +102,13 @@ try {
       // there is a hidden alert component at the top of the orders list,
       // so a selector using nth-child within the ordersContainer has to start at 2,
       // meaning we have to increase all orderIndex values by 1
-      const orderIndex = i % resultsPerPage === 0 ? resultsPerPage + 1 : i % resultsPerPage + 1;
-      
+      const orderIndex = i % resultsPerPage === 0 ? resultsPerPage + 1 : (i % resultsPerPage) + 1;
 
       // the popover ids start at 3 and Amazon increments them in the order the elements are clicked,
       // so the first opened popover has #a-popover-3, the next #a-popover-4, #a-popover-5 etc.
       const popoverContent = `#a-popover-content-${orderIndex - overIndex} ${selectors.list.popoverLinks}`;
 
-      if(i % resultsPerPage === 0) {
+      if (i % resultsPerPage === 0) {
         overIndex = 0;
       }
 
@@ -121,15 +120,15 @@ try {
 
         // get metadata of order
         context.orderDetails = await getOrderDetails(page, order);
-        if(inventory[context.orderDetails.id]) break;
+        if (inventory[context.orderDetails.id]) break;
 
         orderData.push(context.orderDetails);
 
         const popoverTrigger = await page.$(`${order} ${s.popoverTrigger}`);
         await popoverTrigger.click();
-        console.log('continue1', popoverContent)
+        console.log('continue1', popoverContent);
         await page.waitFor(popoverContent); // the popover content can take up to 1-3 seconds to load
-        console.log('continue')
+        console.log('continue');
 
         await page.evaluate(
           async (sel, context) => {
@@ -168,7 +167,7 @@ try {
 
                 return fetch(link.href, {
                   credentials: 'same-origin', // useful for sending cookies when logged in
-                  responseType: 'arraybuffer',
+                  responseType: 'arraybuffer'
                 })
                   .then(response => response.arrayBuffer())
                   .then(arrayBuffer => {
@@ -185,8 +184,8 @@ try {
           context
         );
       } catch (e) {
-        if(i % resultsPerPage !== 0) {
-                ++overIndex;
+        if (i % resultsPerPage !== 0) {
+          ++overIndex;
         }
         const resultsPage = Math.ceil(i / resultsPerPage);
         logError(`Failed to process order ${orderNumber}, orderIndex ${orderIndex}, page ${resultsPage}`);
@@ -195,7 +194,7 @@ try {
         const path = `${outputFolder}/FAILED__${orderNumber}.png`;
         await page.screenshot({
           fullPage: true,
-          path,
+          path
         });
         failedExports.push(`Order ${orderNumber}, see screenshot ${path}`);
       }
@@ -210,11 +209,18 @@ try {
 
   const orderDataFile = './output/order_data.csv';
   fs.writeFile(orderDataFile, orderDataToCSV(orderData));
-  fs.writeFile('./output/inventory.json', JSON.stringify({...inventory, ...orderData.reduce((o,x) => {
-    if(!o[x.id]) o[x.id] = [x]
-    else o[x.id].push(x)
+  fs.writeFile(
+    './output/inventory.json',
+    JSON.stringify({
+      ...inventory,
+      ...orderData.reduce((o, x) => {
+        if (!o[x.id]) o[x.id] = [x];
+        else o[x.id].push(x);
 
-    return o
-  }, {})}), 'utf8')
+        return o;
+      }, {})
+    }),
+    'utf8'
+  );
   logResults(failedExports, args, orderDataFile);
 })();
