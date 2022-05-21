@@ -19,7 +19,6 @@
     "command-line-args": "^4.0.7",
     "command-line-usage": "^4.0.2",
     "fs-extra": "^5.0.0",
-    "prettier": "^1.9.2",
     "puppeteer": "^14.1.1",
     "slugify": "^1.2.9"
   },
