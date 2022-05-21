@@ -17,7 +17,7 @@ specifiers:
   eslint-plugin-promise: ^5.1.1
   eslint-plugin-standard: ^5.0.0
   fs-extra: ^5.0.0
-  prettier: ^1.9.2
+  prettier: ^2.0.5
   pretty-quick: ^3.1.1
   puppeteer: ^14.1.1
   slugify: ^1.2.9
@@ -33,7 +33,6 @@ dependencies:
   command-line-args: 4.0.7
   command-line-usage: 4.1.0
   fs-extra: 5.0.0
-  prettier: 1.19.1
   puppeteer: 14.1.1
   slugify: 1.6.5
 
@@ -44,7 +43,8 @@ devDependencies:
   eslint-plugin-node: 11.1.0_eslint@7.32.0
   eslint-plugin-promise: 5.2.0_eslint@7.32.0
   eslint-plugin-standard: 5.0.0_eslint@7.32.0
-  pretty-quick: 3.1.3_prettier@1.19.1
+  prettier: 2.6.2
+  pretty-quick: 3.1.3_prettier@2.6.2
 
 packages:
 
@@ -2855,13 +2855,13 @@ packages:
     dev: false
     optional: true
 
-  /prettier/1.19.1:
-    resolution: {integrity: sha512-s7PoyDv/II1ObgQunCbB9PdLmUcBZcnWOcxDh7O0N/UwDEsHyqkW+Qh28jW+mVuCdx7gLB0BotYI1Y6uI9iyew==}
-    engines: {node: '>=4'}
+  /prettier/2.6.2:
+    resolution: {integrity: sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==}
+    engines: {node: '>=10.13.0'}
     hasBin: true
-    dev: false
+    dev: true
 
-  /pretty-quick/3.1.3_prettier@1.19.1:
+  /pretty-quick/3.1.3_prettier@2.6.2:
     resolution: {integrity: sha512-kOCi2FJabvuh1as9enxYmrnBC6tVMoVOenMaBqRfsvBHB0cbpYHjdQEpSglpASDFEXVwplpcGR4CLEaisYAFcA==}
     engines: {node: '>=10.13'}
     hasBin: true
@@ -2874,7 +2874,7 @@ packages:
       ignore: 5.2.0
       mri: 1.2.0
       multimatch: 4.0.0
-      prettier: 1.19.1
+      prettier: 2.6.2
     dev: true
 
   /private/0.1.8:
