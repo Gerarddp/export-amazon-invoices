@@ -1,15 +1,15 @@
 const selectors = {
   list: {
     numOrders: '#controlsContainer .num-orders-for-orders-by-date .num-orders',
-    order: '#ordersContainer .order',
+    order: '.order',
     orderDetails: {
       article: '.shipment .a-col-left .a-col-right .a-row:first-of-type .a-link-normal',
-      date: '.order-info .a-col-left > .a-row > .a-span3 > .a-size-base .a-color-secondary.value',
+      date: '.order-info .a-col-left > .a-row > .a-span4 > .a-size-base .a-color-secondary.value',
       id: '.order-info .actions > .a-row:first-of-type .value',
       total: '.order-info .a-col-left > .a-row > .a-span2 > .a-size-base .value',
       url: '.order-info .actions .a-row:nth-of-type(2) > .a-unordered-list > .a-link-normal:first-of-type',
     },
-    page: '#yourOrders',
+    page: '.your-orders-content-container',
     popoverLinks: '.a-unordered-list .a-list-item a',
     popoverTrigger: '.order-info .a-col-right .a-popover-trigger',
   },

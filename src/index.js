@@ -81,6 +81,13 @@ try {
 
     await page.goto(listOrders(year, groupKey, 0), { waitUntil: 'load' });
 
+    try {
+      await page.waitForSelector(selectors.list.numOrders)
+    } catch (error) {
+      logDetail("No order for this year");
+      continue;
+    }
+
     const numberOfOrders = Math.min(
       args.limit,
       await page.$eval(selectors.list.numOrders, el => parseInt(el.innerText.split(' ')[0], 10))
@@ -89,7 +96,8 @@ try {
 
     // define variables that should be available in page.evaluate
     const context = {
-      outputFolder
+      outputFolder,
+      args
     };
 
     let overIndex = 0;
@@ -106,7 +114,9 @@ try {
 
       // the popover ids start at 3 and Amazon increments them in the order the elements are clicked,
       // so the first opened popover has #a-popover-3, the next #a-popover-4, #a-popover-5 etc.
-      const popoverContent = `#a-popover-content-${orderIndex - overIndex} ${selectors.list.popoverLinks}`;
+      const popoverContent = `#a-popover-${orderIndex - overIndex - 1} ${selectors.list.popoverLinks}`;
+
+      console.log('orderIndex', orderIndex);
 
       if (i % resultsPerPage === 0) {
         overIndex = 0;
@@ -120,18 +130,19 @@ try {
 
         // get metadata of order
         context.orderDetails = await getOrderDetails(page, order);
-        if (inventory[context.orderDetails.id]) break;
+        console.log('inventory[context.orderDetails.id]', inventory[context.orderDetails.id]);
+        //if (inventory[context.orderDetails.id]) break;
 
         orderData.push(context.orderDetails);
 
         const popoverTrigger = await page.$(`${order} ${s.popoverTrigger}`);
         await popoverTrigger.click();
         console.log('continue1', popoverContent);
-        await page.waitFor(popoverContent); // the popover content can take up to 1-3 seconds to load
+        await page.waitForSelector(popoverContent); // the popover content can take up to 1-3 seconds to load
         console.log('continue');
 
         await page.evaluate(
-          async (sel, context) => {
+          (sel, context) => {
             // we are in browser context now and don't have access to outside variables and functions
             // unless they are passed down (done here with variable 'context');
             // all console.logs in here are logged in the console of the Chromium instance;
@@ -153,9 +164,9 @@ try {
               return result;
             };
 
-            document.querySelectorAll(sel).forEach(async link => {
+            document.querySelectorAll(sel).forEach(async (link, i) => {
               // Amazon invoice links match either pattern 'Rechnung 1' or pattern 'Rechnung oder Gutschrift 1'
-              const invoiceLinkRegex = /^Rechnung( oder Gutschrift)?\s[0-9]{1,2}/;
+              const invoiceLinkRegex = /^Rechnung.*\s[0-9]{1,2}/;
 
               const isInvoiceLink = invoiceLinkRegex.test(link.innerText);
               if (isInvoiceLink) {
@@ -165,16 +176,16 @@ try {
                 // and a proper invoice must be requested from the merchant
                 const requestInvoice = link.href.includes('generated_invoices') ? 'ANFORDERN_' : '';
 
-                return fetch(link.href, {
+                await fetch(link.href, {
                   credentials: 'same-origin', // useful for sending cookies when logged in
                   responseType: 'arraybuffer'
                 })
                   .then(response => response.arrayBuffer())
                   .then(arrayBuffer => {
                     const aBString = ab2str(arrayBuffer);
-                    const path = `${context.outputFolder}/${requestInvoice}Amazon_Rechnung_${context.orderNumber}.pdf`;
+                    const path = `${context.outputFolder}/${requestInvoice}Amazon_Rechnung_${context.args.user}_${context.orderNumber}_${i}.pdf`;
 
-                    return window.writeABString(aBString, path);
+                    window.writeABString(aBString, path);
                   })
                   .catch(e => console.error('Request failed', e));
               }
@@ -199,7 +210,7 @@ try {
         failedExports.push(`Order ${orderNumber}, see screenshot ${path}`);
       }
     }
-
+    await new Promise(r => setTimeout(r, 3000));
     logStatus(`Invoices saved as PDF in folder /output/${year}`);
   }
 

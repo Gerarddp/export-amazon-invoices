@@ -13,11 +13,11 @@ const logInIfRequired = async (page, args) => {
       await page.type(selectors.login.user, args.user);
       await page.click(selectors.login.continue);
 
-      await page.waitFor(selectors.login.password);
+      await page.waitForSelector(selectors.login.password);
       await page.type(selectors.login.password, args.password);
       await page.click(selectors.login.submit);
 
-      await page.waitFor(selectors.list.page);
+      await page.waitForSelector(selectors.list.page);
       logDetail('Logged in successfully');
     } catch (e) {
       logError(`Could not log in with\n  user      ${args.user}\n  password  ${args.password}`);
